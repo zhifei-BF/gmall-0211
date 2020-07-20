@@ -19,13 +19,13 @@
     <modules>
         <module>gmall-admin</module>
         <module>gmall-common</module>
-<!--        <module>gmall-sms-interface</module>-->
+        <module>gmall-sms</module>
 <!--        <module>gmall-search</module>-->
-<!--        <module>gmall-pms-interface</module>-->
-<!--        <module>gmall-wms-interface</module>-->
-<!--        <module>gmall-ums-interface</module>-->
+        <module>gmall-pms</module>
+        <module>gmall-wms</module>
+        <module>gmall-ums</module>
 <!--        <module>gmall-cart-interface</module>-->
-<!--        <module>gmall-oms-interface</module>-->
+        <module>gmall-oms</module>
     </modules>
 
     <properties>
@@ -40,6 +40,14 @@
         <redisson.version>3.12.3</redisson.version>
         <lang3.version>3.9</lang3.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>${redisson.version}</version>
+        </dependency>
+    </dependencies>
 
     <dependencyManagement>
         <dependencies>

@@ -2,7 +2,10 @@
 *.class
 .idea/
 *.iml
-
+mvnw*
+.gitignore
+.mvn/
+target/
 # Log file
 *.log
 
