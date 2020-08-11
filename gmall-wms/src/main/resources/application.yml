@@ -5,6 +5,8 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+#      config:
+#        timeout: 5000
     sentinel:
       transport:
         dashboard: localhost:8080

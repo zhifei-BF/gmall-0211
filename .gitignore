@@ -1,11 +1,12 @@
-# Compiled class file
-*.class
 .idea/
 *.iml
 mvnw*
-.gitignore
 .mvn/
 target/
+
+# Compiled class file
+*.class
+
 # Log file
 *.log
 

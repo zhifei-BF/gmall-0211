@@ -1,24 +1,21 @@
 package com.atguigu.gmall.pms.controller;
 
+import java.util.Enumeration;
 import java.util.List;
 
 import com.atguigu.gmall.pms.vo.SpuVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.atguigu.gmall.pms.entity.SpuEntity;
 import com.atguigu.gmall.pms.service.SpuService;
 import com.atguigu.gmall.common.bean.PageResultVo;
 import com.atguigu.gmall.common.bean.ResponseVo;
 import com.atguigu.gmall.common.bean.PageParamVo;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * spu信息
@@ -34,6 +31,13 @@ public class SpuController {
 
     @Autowired
     private SpuService spuService;
+
+    @PostMapping("page")
+    public ResponseVo<List<SpuEntity>> querySpusByPage(@RequestBody PageParamVo pageParamVo){
+        PageResultVo page = spuService.queryPage(pageParamVo);
+        List<SpuEntity> list = (List<SpuEntity>)page.getList();
+        return ResponseVo.ok(list);
+    }
 
     @GetMapping("category/{categoryId}")
     @ApiOperation("spu商品信息查询")
@@ -97,5 +101,7 @@ public class SpuController {
 
         return ResponseVo.ok();
     }
+
+
 
 }

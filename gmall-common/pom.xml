@@ -13,6 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <groupId>com.atguigu</groupId>
     <dependencies>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -63,6 +64,7 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

@@ -108,7 +108,7 @@ public final class CookieUtils {
 	 * @param cookieMaxAge 生存时间
 	 */
 	public static final void setCookie(HttpServletRequest request, HttpServletResponse response, String cookieName, String cookieValue, Integer cookieMaxAge) {
-		setCookie(request,response,cookieName,cookieValue,cookieMaxAge,null, null);
+		setCookie(request,response,cookieName,cookieValue,cookieMaxAge,"UTF-8", null);
 	}
 
 	/**

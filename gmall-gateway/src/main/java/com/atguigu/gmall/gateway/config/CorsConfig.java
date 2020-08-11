@@ -14,6 +14,11 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOrigin("http://manager.gmall.com");
         config.addAllowedOrigin("http://api.gmall.com");
+        config.addAllowedOrigin("http://cart.gmall.com");
+        config.addAllowedOrigin("http://127.0.0.1:1000");
+        config.addAllowedOrigin("http://localhost:1000");
+        config.addAllowedOrigin("http://www.gmall.com");
+        config.addAllowedOrigin("http://static.gmall.com");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
@@ -22,4 +27,6 @@ public class CorsConfig {
         return  new CorsWebFilter(corsConfigurationSource);
 
     }
+
+
 }

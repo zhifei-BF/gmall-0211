@@ -5,13 +5,15 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+#      config:
+#        timeout: 5000
     sentinel:
       transport:
         dashboard: localhost:8080
         port: 8719
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://192.168.21.52:3306/guli_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    url: jdbc:mysql://localhost:3306/guli_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false
     username: root
     password: 123456
   redis:
