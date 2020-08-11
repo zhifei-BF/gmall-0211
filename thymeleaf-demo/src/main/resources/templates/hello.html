@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>hello thymeleafdemo</title>
+</head>
+<body>
+    <h1 th:utext="${test}">晨光汤</h1>
+
+    <h1 th:text="${user.name}">？？？</h1>
+
+    <h1>
+        字符串常量：<span th:text="欢迎你"></span><br>
+        数字常量：<span th:text="2020"></span><br>
+        数字常量运算：<span th:text="2020-100"></span><br>
+        bool常量：<span th:text="true"></span>
+    </h1>
+
+    <h1>
+        <span th:text="'欢迎你啊' + ${user.name}"></span>
+        <sapn th:text="|欢迎你啊啊,${user.name}|"></sapn>
+    </h1>
+
+    <h1>
+        10年后，我<span th:text="${user.age} + 10"></span>岁<br>
+        比较结果：<span th:text="${user.age} < ${user.friend.age}"></span><br>
+
+        三元：<span th:text="${user.age}%2 == 0 ? '帅' : '不帅'"></span><br>
+        三元运算：<span th:text="${user.age} == ${user.friend.age} ? '猴子':'猪八戒'"></span><br>
+
+        默认值：<span th:text="${user.name} ?: '刘德华'"></span>
+    </h1>
+
+    <h2>
+        <p th:text="${user.name}">Jack</p>
+        <p th:text="${user.age}">21</p>
+        <p th:text="${user.friend.name}">Rose</p>
+    </h2>
+
+</body>
+</html>
