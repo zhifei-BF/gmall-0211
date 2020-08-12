@@ -1,13 +1,18 @@
-package com.atguigu.gmall.order.service;
+package com.atguigu.gmall.order.service.impl;
 
 
+import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.cart.bean.Cart;
 import com.atguigu.gmall.common.bean.ResponseVo;
 import com.atguigu.gmall.common.exception.UserException;
+
+import com.atguigu.gmall.oms.entity.OrderEntity;
+import com.atguigu.gmall.oms.entity.OrderItemVo;
+
+import com.atguigu.gmall.oms.entity.OrderSubmitVO;
 import com.atguigu.gmall.order.feign.*;
 import com.atguigu.gmall.order.interceptor.LoginInterceptor;
 import com.atguigu.gmall.order.vo.OrderConfirmVo;
-import com.atguigu.gmall.order.vo.OrderItemVo;
 import com.atguigu.gmall.order.vo.UserInfo;
 import com.atguigu.gmall.pms.entity.SkuAttrValueEntity;
 import com.atguigu.gmall.pms.entity.SkuEntity;
@@ -15,14 +20,20 @@ import com.atguigu.gmall.sms.vo.ItemSaleVo;
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
 import com.atguigu.gmall.ums.entity.UserEntity;
 import com.atguigu.gmall.wms.entity.WareSkuEntity;
+import com.atguigu.gmall.wms.vo.SkuLockVO;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -43,6 +54,12 @@ public class OrderService {
 
     @Autowired
     private GmallWmsClient wmsClient;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private GmallOmsClient omsClient;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -76,11 +93,12 @@ public class OrderService {
             }
             return carts;
         }, threadPoolExecutor);
+
         CompletableFuture<Void> itemCompletableFuture = cartCompletableFuture.thenAcceptAsync(carts -> {
             List<OrderItemVo> items = carts.stream().map(cart -> {
                 OrderItemVo orderItemVo = new OrderItemVo();
                 orderItemVo.setSkuId(cart.getSkuId());
-                orderItemVo.setCount(cart.getCount().intValue());
+                orderItemVo.setCount(cart.getCount());
                 // 根据skuId查询sku
                 CompletableFuture<Void> skuCompletableFuture = CompletableFuture.runAsync(() -> {
                     ResponseVo<SkuEntity> skuEntityResponseVo = this.pmsClient.querySkuById(cart.getSkuId());
@@ -115,6 +133,7 @@ public class OrderService {
                 CompletableFuture.allOf(skuCompletableFuture, saleAttrCompletableFuture, saleCompletableFuture, storeCompletableFuture).join();
                 return orderItemVo;
             }).collect(Collectors.toList());
+
             confirmVo.setItems(items);
         }, threadPoolExecutor);
 
@@ -144,5 +163,76 @@ public class OrderService {
         CompletableFuture.allOf(itemCompletableFuture, addressCompletableFuture, boundsCompletableFuture, tokenCompletableFuture).join();
 
         return confirmVo;
+    }
+
+
+    public OrderEntity submit(OrderSubmitVO submitVo) {
+
+        // 1.防重
+        String orderToken = submitVo.getOrderToken();
+        String script = "if redis.call('get', KEYS[1]) == ARGV[1] " +
+                "then return redis.call('del', KEYS[1]) " +
+                "else return 0 end";
+        Boolean flag = this.redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), Arrays.asList(KEY_PREFIX + orderToken), orderToken);
+        if (!flag) {
+            throw new RuntimeException("您多次提交过快，请稍后再试！");
+        }
+
+        // 2.验价
+        BigDecimal totalPrice = submitVo.getTotalPrice(); // 获取页面上的价格
+        List<OrderItemVo> items = submitVo.getItems(); // 订单详情
+        if (CollectionUtils.isEmpty(items)) {
+            throw new RuntimeException("您没有选中的商品，请选择要购买的商品！");
+        }
+        // 遍历订单详情，获取数据库价格，计算实时总价
+        BigDecimal currentTotalPrice = items.stream().map(item -> {
+            ResponseVo<SkuEntity> skuEntityResp = this.pmsClient.querySkuById(item.getSkuId());
+            SkuEntity skuEntity = skuEntityResp.getData();
+            if (skuEntity != null) {
+                return skuEntity.getPrice().multiply(item.getCount());
+            }
+            return new BigDecimal(0);
+        }).reduce((t1, t2) -> t1.add(t2)).get();
+        if (totalPrice.compareTo(currentTotalPrice) != 0) {
+            throw new RuntimeException("页面已过期，刷新后再试！");
+        }
+
+        // 3.验库存并锁库存
+        List<SkuLockVO> lockVOS = items.stream().map(item -> {
+            SkuLockVO skuLockVO = new SkuLockVO();
+            skuLockVO.setSkuId(item.getSkuId());
+            skuLockVO.setCount(item.getCount().intValue());
+            skuLockVO.setOrderToken(submitVo.getOrderToken());
+            return skuLockVO;
+        }).collect(Collectors.toList());
+        ResponseVo<List<SkuLockVO>> skuLockResp = this.wmsClient.checkAndLock(lockVOS);
+        List<SkuLockVO> skuLockVOS = skuLockResp.getData();
+        if (!CollectionUtils.isEmpty(skuLockVOS)){
+            throw new RuntimeException("手慢了，商品库存不足：" + JSON.toJSONString(skuLockVOS));
+        }
+
+        // order：此时服务器宕机
+
+        // 4.下单
+        UserInfo userInfo = LoginInterceptor.getUserInfo();
+        Long userId = userInfo.getUserId();
+        OrderEntity orderEntity = null;
+        try {
+            ResponseVo<OrderEntity> orderEntityResp = this.omsClient.saveOrder(submitVo, userId);// feign（请求，响应）超时
+            orderEntity = orderEntityResp.getData();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 如果订单创建失败，立马释放库存
+            this.rabbitTemplate.convertAndSend("ORDER-EXCHANGE", "stock.unlock", orderToken);
+        }
+
+        // 5.删除购物车。异步发送消息给购物车，删除购物车
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", userId);
+        List<Long> skuIds = items.stream().map(OrderItemVo::getSkuId).collect(Collectors.toList());
+        map.put("skuIds", JSON.toJSONString(skuIds));
+        this.rabbitTemplate.convertAndSend("ORDER-EXCHANGE", "cart.delete", map);
+
+        return orderEntity;
     }
 }

@@ -19,6 +19,16 @@ spring:
       probability: 1
   redis:
     host: 192.168.206.128
+  rabbitmq:
+    host: 192.168.206.128
+    virtual-host: /helin
+    username: helin
+    password: helin
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 5
+        prefetch: 1
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/guli_cart

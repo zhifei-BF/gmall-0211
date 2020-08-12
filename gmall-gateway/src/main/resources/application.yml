@@ -58,7 +58,7 @@ spring:
           predicates:
             - Host=order.gmall.com
           filters:
-            - Auth
+            - Auth=/confirm,/submit
 
 auth:
   jwt:

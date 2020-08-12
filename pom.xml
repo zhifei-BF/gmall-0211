@@ -41,6 +41,7 @@
         <module>gmall-scheduled</module>
         <module>gmall-order-interface</module>
         <module>gmall-cart-interface</module>
+        <module>gmall-oms-interface</module>
     </modules>
 
     <properties>

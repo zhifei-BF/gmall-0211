@@ -18,6 +18,16 @@ spring:
     password: 123456
   redis:
     host: 192.168.206.128
+  rabbitmq:
+    host: 192.168.206.128
+    virtual-host: /helin
+    username: helin
+    password: helin
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 5
+        prefetch: 1
   zipkin:
     base-url: http://localhost:9411
     discovery-client-enabled: false
