@@ -2,6 +2,7 @@ package com.atguigu.gmall.ums.controller;
 
 import java.util.List;
 
+import com.atguigu.gmall.ums.service.impl.UserServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ import com.atguigu.gmall.common.bean.PageParamVo;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @GetMapping("query")
     public ResponseVo<UserEntity> queryUser(@RequestParam("loginName")String loginName, @RequestParam("password")String password){

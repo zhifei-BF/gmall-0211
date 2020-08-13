@@ -45,6 +45,7 @@ public class CartService {
 
     private static final String KEY_PREFIX = "cart:info";
 
+
     public void addCart(Cart cart) {
 
         System.out.println("2");
@@ -161,4 +162,6 @@ public class CartService {
         }
         return cartJsons.stream().map(cartJson->JSON.parseObject(cartJsons.toString(),Cart.class)).filter(cart->cart.getCheck()).collect(Collectors.toList());
     }
+
+
 }

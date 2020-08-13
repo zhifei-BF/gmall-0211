@@ -1,9 +1,9 @@
 package com.atguigu.gmall.order.controller;
 
+import com.alipay.api.AlipayApiException;
 import com.atguigu.gmall.common.bean.ResponseVo;
 import com.atguigu.gmall.oms.entity.OrderEntity;
 import com.atguigu.gmall.oms.entity.OrderSubmitVO;
-import com.atguigu.gmall.order.feign.GmallCartClient;
 import com.atguigu.gmall.order.service.impl.OrderService;
 import com.atguigu.gmall.order.vo.OrderConfirmVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
+
 
 
 
@@ -36,4 +38,5 @@ public class OrderController {
         OrderEntity orderEntity = this.orderService.submit(submitVo);
         return ResponseVo.ok(orderEntity.getOrderSn());
     }
+
 }

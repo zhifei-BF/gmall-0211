@@ -36,6 +36,7 @@
         <module>gmall-sms-interface</module>
         <module>gmall-scheduled</module>
         <module>gmall-pms-interface</module>
+        <module>gmall-payment</module>
         <module>gmall-wms-interface</module>
         <module>elasticsearch-demo</module>
         <module>gmall-scheduled</module>

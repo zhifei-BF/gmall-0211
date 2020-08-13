@@ -59,7 +59,16 @@ spring:
             - Host=order.gmall.com
           filters:
             - Auth=/confirm,/submit
-
+        - id: payment-route
+          uri: lb://payment-service
+          predicates:
+            - Host=payment.gmall.com
+          filters:
+            - Auth=/pay.html
+        - id: payment-route2
+          uri: lb://payment-service
+          predicates:
+            - Path=/pay/**
 auth:
   jwt:
     pubKeyPath: D:\\project\\rsa\\rsa.pub # 公钥地址

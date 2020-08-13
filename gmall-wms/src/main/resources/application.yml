@@ -17,7 +17,7 @@ spring:
     username: root
     password: 123456
   redis:
-    host: 139.196.26.123
+    host: 192.168.206.128
   zipkin:
     base-url: http://localhost:9411
     discovery-client-enabled: false

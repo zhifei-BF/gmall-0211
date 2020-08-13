@@ -27,5 +27,7 @@ public interface WareSkuMapper extends BaseMapper<WareSkuEntity> {
     int unlockStock(@Param("id") Long id, @Param("count") Integer count);
 
 
+    void minus(Long wareSkuId, Integer count);
+
 
 }

@@ -30,6 +30,13 @@ public class CartController {
         return "redirect:http://cart.gmall.com/addCart.html?skuId=" + cart.getSkuId();
     }
 
+    @GetMapping("cart.html")
+    public String queryCarts(Model model){
+//        List<Cart> carts = this.cartService.queryCart();
+//        model.addAttribute("carts", carts);
+        return "cart";
+    }
+
     @GetMapping("addCart.html")
     public String addCart(@RequestParam("skuId")Long skuId, Model model){
         Cart cart = this.cartService.queryCartBySkuId(skuId);
